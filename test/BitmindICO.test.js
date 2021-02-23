@@ -106,4 +106,40 @@ contract("BitmindICO", function (accounts) {
         );
       });
   });
+
+  it("ends token sale", function () {
+    return BaleToken.deployed()
+      .then(function (instance) {
+        tokenInstance = instance;
+        return BitmindICO.deployed();
+      })
+      .then(function (instance) {
+        tokenSaleInstance = instance;
+        return tokenSaleInstance.endSale({ from: buyer });
+      })
+      .then(assert.fail)
+      .catch(function (error) {
+        assert(
+          error.message.indexOf("revert") >= 0,
+          "must be admin to end sale"
+        );
+        // End sale as admin
+        return tokenSaleInstance.endSale({ from: admin });
+      })
+      .then(function (receipt) {
+        //receipt
+        return tokenInstance.balanceOf(admin);
+      })
+      .then(function (balance) {
+        assert.equal(
+          balance.toNumber(),
+          999990,
+          "returns all unsold tokens to admin"
+        );
+        return tokenSaleInstance.tokenPrice();
+      })
+      .then(function (price) {
+        assert.equal(price.toNumber(), 0, "the price must be 0");
+      });
+  });
 });

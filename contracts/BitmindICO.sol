@@ -2,7 +2,7 @@ pragma solidity ^0.5.0;
 
 import "./BaleToken.sol";
 contract BitmindICO {
-    address admin;
+    address payable admin;
     BaleToken public tokenContract;
     uint256 public tokenPrice;
     uint256 public tokenSold;
@@ -40,5 +40,18 @@ contract BitmindICO {
 
         // trigger sell event
         emit Sell(msg.sender, _value);
+    }
+
+    //Ending ICO
+    function endSale() public {
+        
+        // require admin
+        require(msg.sender == admin);
+        
+        // transfer remaining bale token to admin
+        require(tokenContract.transfer(admin, tokenContract.balanceOf(address(this))));
+        
+        // destroy contract
+        selfdestruct(admin);
     }
 }
